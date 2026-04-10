@@ -42,6 +42,8 @@
     <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+    <!-- TAMBAHAN: Firebase Firestore untuk menyimpan Data Akun secara permanen -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 
     <style>
         /* COLOR THEMES VARIABLES */
@@ -610,6 +612,7 @@
 
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
+        const db = firebase.firestore(); // Firebase Firestore Init
         const provider = new firebase.auth.GoogleAuthProvider();
 
         provider.addScope('https://www.googleapis.com/auth/spreadsheets');
@@ -624,7 +627,7 @@
         let userSpreadsheetId = null;
         let activities = [];
         let myChart = null;
-        let prioritasChart = null; // Tambahan untuk grafik Prioritas
+        let prioritasChart = null; 
         let currentCalDate = new Date(); 
         let syncInterval = null; 
         let isHealing = false; 
@@ -648,7 +651,7 @@
         const themeControls = document.getElementById('themeControls');
         const themeSpacer = document.getElementById('themeSpacer');
 
-        // --- THEME & DARK MODE ENGINE (MENGGUNAKAN UID) ---
+        // --- THEME & DARK MODE ENGINE ---
         function toggleDarkMode() {
             document.body.classList.toggle('dark');
             const isDark = document.body.classList.contains('dark');
@@ -692,24 +695,29 @@
             setTimeout(() => { toast.classList.add('translate-y-20', 'opacity-0'); }, 6000); 
         }
 
-        // --- FUNGSI PENCARI DATABASE LINTAS DEVICE (SIHIR BARU) ---
-        async function findExistingSpreadsheet(token) {
+        // --- FUNGSI DATABASE FIREBASE ---
+        // Ini adalah sihir pencatat ke Database Firebase agar bisa lintas device!
+        async function getSpreadsheetIdFromFirebase(uid) {
             try {
-                // Mencari file bernama persis "Tracker_Portofolio_Mahasiswa_Data" di Drive user
-                const query = encodeURIComponent("name='Tracker_Portofolio_Mahasiswa_Data' and trashed=false");
-                const response = await fetch(`https://www.googleapis.com/drive/v3/files?q=${query}&fields=files(id,name)`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                
-                const data = await response.json();
-                if (data.files && data.files.length > 0) {
-                    // Ketemu! Kita kembalikan ID-nya
-                    return data.files[0].id;
+                const doc = await db.collection('users').doc(uid).get();
+                if (doc.exists && doc.data().spreadsheetId) {
+                    return doc.data().spreadsheetId;
                 }
             } catch (error) {
-                console.error("Gagal mencari file di Drive:", error);
+                console.error("Gagal mengambil ID dari Firebase:", error);
             }
-            return null; // Tidak ketemu
+            return null;
+        }
+
+        async function saveSpreadsheetIdToFirebase(uid, sheetId) {
+            try {
+                await db.collection('users').doc(uid).set({
+                    spreadsheetId: sheetId,
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                }, { merge: true });
+            } catch (error) {
+                console.error("Gagal menyimpan ID ke Firebase:", error);
+            }
         }
 
         // --- AUTH STATE LISTENER ---
@@ -724,8 +732,8 @@
                 document.getElementById('userPhoto').src = user.photoURL;
                 document.getElementById('userName').innerText = user.displayName.split(' ')[0];
                 
-                userSpreadsheetId = localStorage.getItem(`sheetId_${user.uid}`);
                 userAccessToken = localStorage.getItem(`googleToken_${user.uid}`); 
+                userSpreadsheetId = localStorage.getItem(`sheetId_${user.uid}`);
                 
                 if (userAccessToken) {
                     loginBtn.classList.add('hidden');
@@ -735,18 +743,17 @@
                     reconnectBtn.classList.remove('flex');
                     mainDashboardContainer.classList.remove('opacity-50', 'pointer-events-none');
                     
-                    // --- MENCARI DATABASE JIKA DI DEVICE BARU ---
+                    // JIKA LOCAL STORAGE KOSONG, KITA TANYA KE FIREBASE!
                     if (!userSpreadsheetId) {
-                        syncBadge.innerHTML = '<i class="fa-solid fa-search sync-spin"></i> Mencari Database...';
+                        syncBadge.innerHTML = '<i class="fa-solid fa-cloud sync-spin"></i> Menarik Data Akun...';
                         syncBadge.classList.remove('hidden');
                         syncBadge.classList.add('flex');
                         
-                        userSpreadsheetId = await findExistingSpreadsheet(userAccessToken);
+                        userSpreadsheetId = await getSpreadsheetIdFromFirebase(user.uid);
                         
                         if (userSpreadsheetId) {
-                            // Ketemu! Simpan di Local Storage device ini
+                            // Simpan di memori lokal agar tidak bolak-balik ke Firebase
                             localStorage.setItem(`sheetId_${user.uid}`, userSpreadsheetId);
-                            showToast("Database ditemukan! Menghubungkan...");
                         }
                     }
 
@@ -804,11 +811,8 @@
 
                 localStorage.setItem(`googleToken_${user.uid}`, userAccessToken);
                 
-                showToast("Berhasil terhubung! Mencari data...");
+                showToast("Berhasil terhubung! Sinkronisasi Akun...");
                 
-                userSpreadsheetId = localStorage.getItem(`sheetId_${user.uid}`);
-                
-                // Set dan Terapkan Tema
                 if (!localStorage.getItem(`theme_${user.uid}`)) {
                     localStorage.setItem(`theme_${user.uid}`, 'default');
                 }
@@ -826,13 +830,15 @@
                 document.getElementById('userName').innerText = user.displayName.split(' ')[0];
                 mainDashboardContainer.classList.remove('opacity-50', 'pointer-events-none');
                 
-                // --- MENCARI DATABASE JIKA DI DEVICE BARU ---
+                userSpreadsheetId = localStorage.getItem(`sheetId_${user.uid}`);
+                
+                // MENCARI KE FIREBASE JIKA BELUM ADA DI LOKAL
                 if (!userSpreadsheetId) {
-                    syncBadge.innerHTML = '<i class="fa-solid fa-search sync-spin"></i> Mencari Database...';
+                    syncBadge.innerHTML = '<i class="fa-solid fa-cloud sync-spin"></i> Mengecek Akun...';
                     syncBadge.classList.remove('hidden');
                     syncBadge.classList.add('flex');
                     
-                    userSpreadsheetId = await findExistingSpreadsheet(userAccessToken);
+                    userSpreadsheetId = await getSpreadsheetIdFromFirebase(user.uid);
                     
                     if (userSpreadsheetId) {
                         localStorage.setItem(`sheetId_${user.uid}`, userSpreadsheetId);
@@ -895,7 +901,6 @@
                     body: JSON.stringify({ majorDimension: "ROWS", values: headerValues })
                 });
 
-                // PERBAIKAN FORMAT: Atur semua kolom jadi 150px, lalu timpakan kolom C jadi 280px.
                 const formatPayload = {
                     requests: [
                         { repeatCell: { range: { sheetId: 0 }, cell: { userEnteredFormat: { textFormat: { fontFamily: 'Times New Roman', fontSize: 12 }, horizontalAlignment: 'LEFT' } }, fields: 'userEnteredFormat(textFormat,horizontalAlignment)' } },
@@ -935,6 +940,9 @@
                 if (!response.ok) throw new Error("Gagal membuat Spreadsheet");
                 const data = await response.json();
                 userSpreadsheetId = data.spreadsheetId;
+                
+                // SIMPAN KE FIREBASE AGAR BISA DIAKSES DARI DEVICE MANA SAJA
+                await saveSpreadsheetIdToFirebase(uid, userSpreadsheetId);
                 localStorage.setItem(`sheetId_${uid}`, userSpreadsheetId);
 
                 isHealing = true;
