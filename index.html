@@ -132,8 +132,8 @@
         }
 
         .btn-jelly { transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1); }
-        .btn-jelly:hover { transform: scale(1.05) translateY(-2px); }
-        .btn-jelly:active { transform: scale(0.95); }
+        .btn-jelly:hover { transform: scale(1.02) translateY(-2px); }
+        .btn-jelly:active { transform: scale(0.98); }
 
         .glass-card {
             background: rgba(255, 255, 255, 0.9);
@@ -170,6 +170,7 @@
             border: 1px solid #f1f5f9;
             border-radius: 0.5rem;
             overflow: hidden;
+            min-w: 500px; /* Force minimum width for mobile scroll */
         }
         .dark .calendar-grid {
             background-color: #334155;
@@ -213,17 +214,18 @@
         .event-badge:hover { transform: scale(1.05); z-index: 10; position: relative;}
 
         /* Scrollbar custom for popup */
-        .scrollbar-hide::-webkit-scrollbar { display: none; }
-        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+        .scrollbar-hide::-webkit-scrollbar { height: 6px; width: 4px; }
+        .scrollbar-hide::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 10px; }
+        .dark .scrollbar-hide::-webkit-scrollbar-thumb { background-color: #475569; }
     </style>
 </head>
 <body class="min-h-screen p-4 md:p-8 flex flex-col items-center justify-center transition-colors duration-300">
 
-    <!-- Top Bar: Settings & Auth -->
-    <div class="w-full max-w-7xl flex justify-between items-center mb-6">
+    <!-- Top Bar: Settings & Auth (RESPONSIVE FIX) -->
+    <div class="w-full max-w-7xl flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
         
-        <!-- Theme & Dark Mode Controls -->
-        <div class="flex items-center gap-3 bg-white dark:bg-slate-800 p-2 rounded-full shadow-md border border-slate-100 dark:border-slate-700">
+        <!-- Theme & Dark Mode Controls (HIDDEN BEFORE LOGIN) -->
+        <div id="themeControls" class="hidden items-center gap-3 bg-white dark:bg-slate-800 p-2 rounded-full shadow-md border border-slate-100 dark:border-slate-700 w-full sm:w-auto justify-center">
             <!-- Dark Mode Toggle -->
             <button onclick="toggleDarkMode()" id="darkModeToggle" class="w-8 h-8 rounded-full flex items-center justify-center text-slate-500 dark:text-amber-400 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
                 <i class="fa-solid fa-moon dark:hidden"></i>
@@ -234,25 +236,30 @@
             
             <!-- Color Palette -->
             <div class="flex items-center gap-2 px-1">
-                <button onclick="changeTheme('default')" class="w-5 h-5 rounded-full bg-violet-500 shadow-sm border-2 border-transparent focus:border-slate-400" title="Violet"></button>
-                <button onclick="changeTheme('theme-blue')" class="w-5 h-5 rounded-full bg-blue-500 shadow-sm border-2 border-transparent focus:border-slate-400" title="Blue"></button>
-                <button onclick="changeTheme('theme-emerald')" class="w-5 h-5 rounded-full bg-emerald-500 shadow-sm border-2 border-transparent focus:border-slate-400" title="Emerald"></button>
-                <button onclick="changeTheme('theme-rose')" class="w-5 h-5 rounded-full bg-rose-500 shadow-sm border-2 border-transparent focus:border-slate-400" title="Rose"></button>
+                <button onclick="changeTheme('default')" class="w-6 h-6 sm:w-5 sm:h-5 rounded-full bg-violet-500 shadow-sm border-2 border-transparent focus:border-slate-400" title="Violet"></button>
+                <button onclick="changeTheme('theme-blue')" class="w-6 h-6 sm:w-5 sm:h-5 rounded-full bg-blue-500 shadow-sm border-2 border-transparent focus:border-slate-400" title="Blue"></button>
+                <button onclick="changeTheme('theme-emerald')" class="w-6 h-6 sm:w-5 sm:h-5 rounded-full bg-emerald-500 shadow-sm border-2 border-transparent focus:border-slate-400" title="Emerald"></button>
+                <button onclick="changeTheme('theme-rose')" class="w-6 h-6 sm:w-5 sm:h-5 rounded-full bg-rose-500 shadow-sm border-2 border-transparent focus:border-slate-400" title="Rose"></button>
             </div>
         </div>
 
-        <!-- Auth Controls -->
-        <div class="flex items-center gap-3">
-            <button id="loginBtn" onclick="loginWithGoogle()" class="btn-jelly bg-primary-600 text-white font-bold py-2 px-6 rounded-full shadow-lg hover:shadow-primary-500/40 flex items-center gap-2">
+        <!-- Spacer if theme is hidden to keep flex alignment -->
+        <div id="themeSpacer" class="block sm:hidden"></div>
+
+        <!-- Auth Controls (RESPONSIVE FIX) -->
+        <div class="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
+            <button id="loginBtn" onclick="loginWithGoogle()" class="btn-jelly w-full sm:w-auto bg-primary-600 text-white font-bold py-2.5 px-6 rounded-full shadow-lg hover:shadow-primary-500/40 flex justify-center items-center gap-2">
                 <i class="fa-brands fa-google"></i> Login untuk Mulai
             </button>
-            <button id="reconnectBtn" onclick="loginWithGoogle()" class="hidden btn-jelly bg-amber-500 text-white font-bold py-2 px-6 rounded-full shadow-lg border-2 border-amber-400 items-center gap-2">
+            <button id="reconnectBtn" onclick="loginWithGoogle()" class="hidden btn-jelly w-full sm:w-auto bg-amber-500 text-white font-bold py-2.5 px-6 rounded-full shadow-lg border-2 border-amber-400 justify-center items-center gap-2">
                 <i class="fa-solid fa-link"></i> Hubungkan Ulang Drive
             </button>
-            <div id="userInfo" class="hidden items-center gap-3 bg-white dark:bg-slate-800 py-2 px-4 rounded-full shadow-lg border border-slate-100 dark:border-slate-700">
-                <img id="userPhoto" src="" alt="User" class="w-8 h-8 rounded-full border-2 border-primary-200">
-                <span id="userName" class="text-sm font-bold text-slate-700 dark:text-slate-200"></span>
-                <button onclick="logout()" class="ml-2 text-red-500 hover:text-red-700 transition-colors" title="Logout">
+            <div id="userInfo" class="hidden items-center justify-between sm:justify-start w-full sm:w-auto gap-3 bg-white dark:bg-slate-800 py-2 px-4 rounded-full shadow-lg border border-slate-100 dark:border-slate-700">
+                <div class="flex items-center gap-2">
+                    <img id="userPhoto" src="" alt="User" class="w-8 h-8 rounded-full border-2 border-primary-200">
+                    <span id="userName" class="text-sm font-bold text-slate-700 dark:text-slate-200 truncate max-w-[120px]"></span>
+                </div>
+                <button onclick="logout()" class="ml-2 text-red-500 hover:text-red-700 transition-colors bg-red-50 dark:bg-red-900/30 w-8 h-8 rounded-full flex items-center justify-center" title="Logout">
                     <i class="fa-solid fa-sign-out-alt"></i>
                 </button>
             </div>
@@ -263,7 +270,7 @@
     <div class="w-full max-w-7xl grid grid-cols-1 xl:grid-cols-12 gap-8 items-start relative opacity-50 pointer-events-none transition-opacity duration-300" id="mainDashboardContainer">
         
         <div id="syncBadge" class="hidden absolute -top-6 right-4 md:right-8 bg-primary-600 text-white px-4 py-2 rounded-full text-xs font-bold shadow-lg items-center gap-2 z-50 transition-all duration-300">
-            <i class="fa-solid fa-arrows-rotate sync-spin"></i> Menyinkronkan Drive...
+            <i class="fa-solid fa-arrows-rotate sync-spin"></i> Menyinkronkan...
         </div>
 
         <!-- KOLOM KIRI: FORMULIR INPUT -->
@@ -288,7 +295,7 @@
                     </div>
                 </div>
 
-                <div class="px-6 pb-8 pt-4">
+                <div class="px-5 sm:px-6 pb-8 pt-4">
                     <form id="activityForm" class="space-y-4">
                         <div class="group">
                             <label class="block text-[11px] font-bold text-slate-400 mb-1 uppercase tracking-wider ml-2">Nama Aktivitas</label>
@@ -300,7 +307,8 @@
                             </div>
                         </div>
 
-                        <div class="grid grid-cols-2 gap-4">
+                        <!-- RESPONSIVE FIX: Mengubah Grid menjadi 1 kolom di HP, 2 kolom di layar lebih besar -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div class="group">
                                 <label class="block text-[11px] font-bold text-slate-400 mb-1 uppercase tracking-wider ml-2">Kategori</label>
                                 <select id="kategori" required class="input-cute w-full px-4 py-2.5 rounded-xl text-sm font-bold appearance-none cursor-pointer">
@@ -331,7 +339,8 @@
                             </div>
                         </div>
 
-                        <div class="grid grid-cols-2 gap-4">
+                        <!-- RESPONSIVE FIX -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div class="group">
                                 <label class="block text-[11px] font-bold text-slate-400 mb-1 uppercase tracking-wider ml-2">Tgl Pelaksanaan</label>
                                 <input type="date" id="tglPelaksanaan" required class="input-cute w-full px-4 py-2.5 rounded-xl text-sm font-bold text-center">
@@ -352,7 +361,8 @@
                             </div>
                         </div>
 
-                        <div class="grid grid-cols-2 gap-4">
+                        <!-- RESPONSIVE FIX -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div class="group">
                                 <label class="block text-[11px] font-bold text-slate-400 mb-1 uppercase tracking-wider ml-2">Kategori Sosmed</label>
                                 <select id="kategoriSosmed" class="input-cute w-full px-4 py-2.5 rounded-xl text-sm font-bold appearance-none cursor-pointer">
@@ -371,8 +381,8 @@
                             </div>
                         </div>
 
-                        <button type="submit" id="submitBtn" class="btn-jelly w-full bg-primary-600 text-white font-bold py-3.5 px-6 rounded-[1rem] mt-2 flex justify-center items-center gap-2 relative overflow-hidden shadow-lg hover:shadow-primary-500/40">
-                            <span id="btnText" class="flex items-center gap-2 relative z-10">
+                        <button type="submit" id="submitBtn" class="btn-jelly w-full bg-primary-600 text-white font-bold py-3 sm:py-3.5 px-6 rounded-[1rem] mt-2 flex justify-center items-center gap-2 relative overflow-hidden shadow-lg hover:shadow-primary-500/40">
+                            <span id="btnText" class="flex items-center gap-2 relative z-10 text-sm sm:text-base">
                                 <i id="btnIcon" class="fa-solid fa-plus-circle"></i> Tambah Portofolio
                             </span>
                         </button>
@@ -392,90 +402,93 @@
         <div class="xl:col-span-8 space-y-6">
             
             <!-- WIDGETS ATAS -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                 <!-- Kartu Hari Ini -->
-                <div class="bg-gradient-to-br from-primary-400 to-primary-600 rounded-[2rem] p-6 shadow-xl text-white relative overflow-hidden flex items-center gap-5">
-                    <div class="absolute -right-6 -top-6 text-white opacity-10 text-8xl"><i class="fa-solid fa-calendar-day"></i></div>
-                    <div class="bg-white/20 w-16 h-16 rounded-2xl flex items-center justify-center text-3xl backdrop-blur-sm shadow-inner z-10">
+                <div class="bg-gradient-to-br from-primary-400 to-primary-600 rounded-[2rem] p-5 sm:p-6 shadow-xl text-white relative overflow-hidden flex items-center gap-4 sm:gap-5">
+                    <div class="absolute -right-6 -top-6 text-white opacity-10 text-7xl sm:text-8xl"><i class="fa-solid fa-calendar-day"></i></div>
+                    <div class="bg-white/20 min-w-[3.5rem] w-14 h-14 sm:w-16 sm:h-16 rounded-2xl flex items-center justify-center text-2xl sm:text-3xl backdrop-blur-sm shadow-inner z-10">
                         <i class="fa-solid fa-calendar-check"></i>
                     </div>
                     <div class="z-10">
-                        <p class="text-primary-50 text-xs font-bold uppercase tracking-widest mb-1">Hari Ini</p>
-                        <h3 id="txtHariIni" class="text-xl font-extrabold">-</h3>
+                        <p class="text-primary-50 text-[10px] sm:text-xs font-bold uppercase tracking-widest mb-1">Hari Ini</p>
+                        <h3 id="txtHariIni" class="text-lg sm:text-xl font-extrabold leading-tight">-</h3>
                     </div>
                 </div>
 
                 <!-- Kartu Aktivitas Terdekat -->
-                <div class="glass-card rounded-[2rem] p-6 shadow-xl relative overflow-hidden border-2 border-blue-100 dark:border-blue-900/30 flex items-center gap-5">
-                    <div class="absolute -right-4 -bottom-4 text-blue-500 dark:text-blue-400 opacity-5 text-8xl"><i class="fa-solid fa-stopwatch"></i></div>
-                    <div class="bg-blue-500 text-white w-16 h-16 rounded-2xl flex items-center justify-center text-3xl shadow-lg shadow-blue-500/30 z-10">
+                <div class="glass-card rounded-[2rem] p-5 sm:p-6 shadow-xl relative overflow-hidden border-2 border-blue-100 dark:border-blue-900/30 flex items-center gap-4 sm:gap-5">
+                    <div class="absolute -right-4 -bottom-4 text-blue-500 dark:text-blue-400 opacity-5 text-7xl sm:text-8xl"><i class="fa-solid fa-stopwatch"></i></div>
+                    <div class="bg-blue-500 text-white min-w-[3.5rem] w-14 h-14 sm:w-16 sm:h-16 rounded-2xl flex items-center justify-center text-2xl sm:text-3xl shadow-lg shadow-blue-500/30 z-10">
                         <i class="fa-solid fa-bell animate-bounce"></i>
                     </div>
-                    <div class="z-10">
-                        <p class="text-slate-400 dark:text-slate-400 text-xs font-bold uppercase tracking-widest mb-1">Aktivitas Terdekat</p>
-                        <h3 id="txtAktivitasTerdekat" class="text-xl font-extrabold text-slate-800 dark:text-white truncate max-w-[200px]">Belum Ada</h3>
-                        <div id="badgeHMin" class="mt-2 inline-block px-3 py-1 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-xs font-bold rounded-lg border border-blue-100 dark:border-blue-800">-</div>
+                    <div class="z-10 flex-1 min-w-0">
+                        <p class="text-slate-400 dark:text-slate-400 text-[10px] sm:text-xs font-bold uppercase tracking-widest mb-1">Aktivitas Terdekat</p>
+                        <h3 id="txtAktivitasTerdekat" class="text-lg sm:text-xl font-extrabold text-slate-800 dark:text-white truncate">Belum Ada</h3>
+                        <div id="badgeHMin" class="mt-1 sm:mt-2 inline-block px-2 sm:px-3 py-1 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-[10px] sm:text-xs font-bold rounded-lg border border-blue-100 dark:border-blue-800">-</div>
                     </div>
                 </div>
             </div>
 
-            <!-- KALENDER KESIBUKAN -->
-            <div class="glass-card rounded-[2rem] p-6 shadow-xl">
+            <!-- KALENDER KESIBUKAN (RESPONSIVE SCROLL) -->
+            <div class="glass-card rounded-[2rem] p-4 sm:p-6 shadow-xl">
                 <div class="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
-                    <div class="flex items-center gap-3">
-                        <div class="bg-rose-100 dark:bg-rose-900/30 text-rose-500 dark:text-rose-400 w-10 h-10 rounded-xl flex items-center justify-center text-lg">
+                    <div class="flex items-center gap-3 w-full sm:w-auto">
+                        <div class="bg-rose-100 dark:bg-rose-900/30 text-rose-500 dark:text-rose-400 min-w-[2.5rem] w-10 h-10 rounded-xl flex items-center justify-center text-lg">
                             <i class="fa-solid fa-calendar-days"></i>
                         </div>
                         <div>
-                            <h2 class="text-xl font-extrabold text-slate-800 dark:text-white leading-tight">Kalender Kesibukan</h2>
-                            <p class="text-slate-400 text-[11px] font-bold">Klik acara untuk melihat detail lengkap</p>
+                            <h2 class="text-lg sm:text-xl font-extrabold text-slate-800 dark:text-white leading-tight">Kalender Kesibukan</h2>
+                            <p class="text-slate-400 text-[10px] sm:text-[11px] font-bold">Klik acara untuk melihat detail lengkap</p>
                         </div>
                     </div>
-                    <div class="flex items-center gap-2 bg-slate-100 dark:bg-slate-700 p-1 rounded-xl">
+                    <div class="flex items-center gap-2 bg-slate-100 dark:bg-slate-700 p-1 rounded-xl w-full sm:w-auto justify-between">
                         <button onclick="changeMonth(-1)" class="w-8 h-8 rounded-lg hover:bg-white dark:hover:bg-slate-600 hover:shadow text-slate-600 dark:text-slate-300 transition-all"><i class="fa-solid fa-chevron-left"></i></button>
-                        <span id="calMonthYear" class="font-bold text-slate-700 dark:text-slate-200 w-28 text-center text-sm">Bulan Tahun</span>
+                        <span id="calMonthYear" class="font-bold text-slate-700 dark:text-slate-200 w-24 sm:w-28 text-center text-xs sm:text-sm">Bulan Tahun</span>
                         <button onclick="changeMonth(1)" class="w-8 h-8 rounded-lg hover:bg-white dark:hover:bg-slate-600 hover:shadow text-slate-600 dark:text-slate-300 transition-all"><i class="fa-solid fa-chevron-right"></i></button>
                     </div>
                 </div>
                 
-                <div class="calendar-grid text-sm" id="calendarBody">
-                    <!-- Header Hari akan dirender via JS -->
+                <!-- RESPONSIVE FIX: Membungkus kalender untuk horizontal scroll di HP -->
+                <div class="overflow-x-auto pb-2 scrollbar-hide">
+                    <div class="calendar-grid text-xs sm:text-sm" id="calendarBody">
+                        <!-- Header Hari akan dirender via JS -->
+                    </div>
                 </div>
             </div>
 
             <!-- CHART WIDGET -->
-            <div class="glass-card rounded-[2rem] p-6 shadow-xl relative overflow-hidden">
+            <div class="glass-card rounded-[2rem] p-5 sm:p-6 shadow-xl relative overflow-hidden">
                 <div class="flex justify-between items-center mb-4">
                     <div>
-                        <h2 class="text-xl font-extrabold text-slate-800 dark:text-white">Performa Semester</h2>
+                        <h2 class="text-lg sm:text-xl font-extrabold text-slate-800 dark:text-white">Performa Semester</h2>
                     </div>
                     <div class="bg-primary-100 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 w-10 h-10 rounded-xl flex items-center justify-center shadow-inner">
                         <i class="fa-solid fa-chart-simple"></i>
                     </div>
                 </div>
-                <div class="relative h-56 w-full">
+                <div class="relative h-48 sm:h-56 w-full">
                     <canvas id="portfolioChart"></canvas>
                 </div>
             </div>
 
             <!-- SUMMARY WIDGETS -->
             <div class="grid grid-cols-2 gap-4">
-                <div class="glass-card rounded-3xl p-4 shadow-lg flex items-center gap-4">
-                    <div class="bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 w-10 h-10 rounded-full flex items-center justify-center">
+                <div class="glass-card rounded-3xl p-4 shadow-lg flex flex-col sm:flex-row items-center sm:items-start text-center sm:text-left gap-2 sm:gap-4">
+                    <div class="bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 w-10 h-10 rounded-full flex items-center justify-center shrink-0">
                         <i class="fa-solid fa-trophy"></i>
                     </div>
                     <div>
-                        <p class="text-slate-400 text-[10px] font-bold uppercase tracking-wide">Total Aktivitas</p>
-                        <p id="totalAktivitas" class="text-xl font-extrabold text-slate-800 dark:text-white">0</p>
+                        <p class="text-slate-400 text-[9px] sm:text-[10px] font-bold uppercase tracking-wide">Total Aktivitas</p>
+                        <p id="totalAktivitas" class="text-lg sm:text-xl font-extrabold text-slate-800 dark:text-white">0</p>
                     </div>
                 </div>
-                <div class="glass-card rounded-3xl p-4 shadow-lg flex items-center gap-4">
-                    <div class="bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 w-10 h-10 rounded-full flex items-center justify-center">
+                <div class="glass-card rounded-3xl p-4 shadow-lg flex flex-col sm:flex-row items-center sm:items-start text-center sm:text-left gap-2 sm:gap-4">
+                    <div class="bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 w-10 h-10 rounded-full flex items-center justify-center shrink-0">
                         <i class="fa-solid fa-fire"></i>
                     </div>
                     <div>
-                        <p class="text-slate-400 text-[10px] font-bold uppercase tracking-wide">Paling Aktif</p>
-                        <p id="semesterTeraktif" class="text-sm font-extrabold text-slate-800 dark:text-white">-</p>
+                        <p class="text-slate-400 text-[9px] sm:text-[10px] font-bold uppercase tracking-wide">Paling Aktif</p>
+                        <p id="semesterTeraktif" class="text-sm font-extrabold text-slate-800 dark:text-white truncate max-w-[100px]">-</p>
                     </div>
                 </div>
             </div>
@@ -486,59 +499,59 @@
     <!-- MODAL DETAIL EVENT (POP-UP) -->
     <div id="eventModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] hidden items-center justify-center p-4 opacity-0 transition-opacity duration-300">
         <div class="bg-white dark:bg-slate-800 rounded-[2rem] w-full max-w-md shadow-2xl overflow-hidden transform scale-95 transition-transform duration-300" id="eventModalContent">
-            <div class="p-6 relative">
+            <div class="p-5 sm:p-6 relative">
                 <!-- Close Button -->
                 <button onclick="closeModal()" class="absolute top-4 right-4 w-8 h-8 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-500 dark:text-slate-300 rounded-full flex items-center justify-center transition-colors">
                     <i class="fa-solid fa-times"></i>
                 </button>
                 
                 <!-- Header Modal -->
-                <div class="flex items-center gap-4 mb-6 pr-8">
-                    <div id="modalIconBg" class="w-12 h-12 rounded-2xl flex items-center justify-center text-xl shadow-inner">
+                <div class="flex items-center gap-3 sm:gap-4 mb-6 pr-8">
+                    <div id="modalIconBg" class="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl flex items-center justify-center text-lg sm:text-xl shadow-inner shrink-0">
                         <i id="modalIcon" class="fa-solid fa-rocket"></i>
                     </div>
                     <div>
-                        <p id="modalKategori" class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-0.5">KATEGORI</p>
-                        <h2 id="modalNama" class="text-xl font-extrabold text-slate-800 dark:text-white leading-tight">Nama Aktivitas</h2>
+                        <p id="modalKategori" class="text-[9px] sm:text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-0.5">KATEGORI</p>
+                        <h2 id="modalNama" class="text-lg sm:text-xl font-extrabold text-slate-800 dark:text-white leading-tight">Nama Aktivitas</h2>
                     </div>
                 </div>
 
                 <!-- Info Rows -->
                 <div class="space-y-3">
-                    <div class="flex justify-between items-center p-3.5 bg-slate-50 dark:bg-slate-700/50 rounded-2xl border border-slate-100 dark:border-slate-700">
-                        <div class="flex items-center gap-3 text-slate-600 dark:text-slate-300 font-semibold text-sm">
+                    <div class="flex justify-between items-center p-3 sm:p-3.5 bg-slate-50 dark:bg-slate-700/50 rounded-2xl border border-slate-100 dark:border-slate-700">
+                        <div class="flex items-center gap-2 sm:gap-3 text-slate-600 dark:text-slate-300 font-semibold text-xs sm:text-sm">
                             <i class="fa-solid fa-graduation-cap opacity-50"></i> Semester
                         </div>
-                        <div id="modalSemester" class="font-bold text-slate-800 dark:text-white text-sm">Semester X</div>
+                        <div id="modalSemester" class="font-bold text-slate-800 dark:text-white text-xs sm:text-sm">Semester X</div>
                     </div>
                     
-                    <div class="flex justify-between items-center p-3.5 bg-emerald-50 dark:bg-emerald-900/20 rounded-2xl border border-emerald-100 dark:border-emerald-800/50">
-                        <div class="flex items-center gap-3 text-emerald-600 dark:text-emerald-400 font-semibold text-sm">
+                    <div class="flex justify-between items-center p-3 sm:p-3.5 bg-emerald-50 dark:bg-emerald-900/20 rounded-2xl border border-emerald-100 dark:border-emerald-800/50">
+                        <div class="flex items-center gap-2 sm:gap-3 text-emerald-600 dark:text-emerald-400 font-semibold text-xs sm:text-sm">
                             <i class="fa-regular fa-calendar-check opacity-70"></i> Pelaksanaan
                         </div>
-                        <div id="modalPelaksanaan" class="font-bold text-emerald-700 dark:text-emerald-300 text-sm">Tanggal</div>
+                        <div id="modalPelaksanaan" class="font-bold text-emerald-700 dark:text-emerald-300 text-xs sm:text-sm text-right max-w-[150px]">Tanggal</div>
                     </div>
                     
-                    <div class="flex justify-between items-center p-3.5 bg-rose-50 dark:bg-rose-900/20 rounded-2xl border border-rose-100 dark:border-rose-800/50">
-                        <div class="flex items-center gap-3 text-rose-600 dark:text-rose-400 font-semibold text-sm">
+                    <div class="flex justify-between items-center p-3 sm:p-3.5 bg-rose-50 dark:bg-rose-900/20 rounded-2xl border border-rose-100 dark:border-rose-800/50">
+                        <div class="flex items-center gap-2 sm:gap-3 text-rose-600 dark:text-rose-400 font-semibold text-xs sm:text-sm">
                             <i class="fa-solid fa-hourglass-half opacity-70"></i> Deadline
                         </div>
-                        <div id="modalDeadline" class="font-bold text-rose-700 dark:text-rose-300 text-sm">Tanggal</div>
+                        <div id="modalDeadline" class="font-bold text-rose-700 dark:text-rose-300 text-xs sm:text-sm text-right max-w-[150px]">Tanggal</div>
                     </div>
                     
                     <div class="pt-2">
-                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 ml-1"><i class="fa-solid fa-link"></i> Info / Registrasi</p>
-                        <a href="#" id="modalLinkReg" target="_blank" class="block w-full p-3.5 bg-primary-50 dark:bg-primary-900/20 rounded-2xl border border-primary-100 dark:border-primary-800/50 text-primary-600 dark:text-primary-400 font-semibold text-sm truncate hover:bg-primary-100 dark:hover:bg-primary-900/40 transition-colors">
+                        <p class="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 ml-1"><i class="fa-solid fa-link"></i> Info / Registrasi</p>
+                        <a href="#" id="modalLinkReg" target="_blank" class="block w-full p-3 sm:p-3.5 bg-primary-50 dark:bg-primary-900/20 rounded-2xl border border-primary-100 dark:border-primary-800/50 text-primary-600 dark:text-primary-400 font-semibold text-xs sm:text-sm truncate hover:bg-primary-100 dark:hover:bg-primary-900/40 transition-colors">
                             link
                         </a>
                     </div>
                     
                     <div class="pt-1">
-                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 ml-1"><i class="fa-brands fa-instagram"></i> Info Sosial Media</p>
-                        <a href="#" id="modalLinkSosmed" target="_blank" class="block w-full p-3.5 bg-pink-50 dark:bg-pink-900/20 rounded-2xl border border-pink-100 dark:border-pink-800/50 text-pink-600 dark:text-pink-400 font-semibold text-sm truncate hover:bg-pink-100 dark:hover:bg-pink-900/40 transition-colors">
+                        <p class="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 ml-1"><i class="fa-brands fa-instagram"></i> Info Sosial Media</p>
+                        <a href="#" id="modalLinkSosmed" target="_blank" class="block w-full p-3 sm:p-3.5 bg-pink-50 dark:bg-pink-900/20 rounded-2xl border border-pink-100 dark:border-pink-800/50 text-pink-600 dark:text-pink-400 font-semibold text-xs sm:text-sm truncate hover:bg-pink-100 dark:hover:bg-pink-900/40 transition-colors">
                             @sosmed
                         </a>
-                        <div id="modalNoSosmed" class="hidden w-full p-3.5 bg-slate-50 dark:bg-slate-700/50 rounded-2xl border border-slate-100 dark:border-slate-700 text-slate-400 dark:text-slate-500 font-semibold text-sm">
+                        <div id="modalNoSosmed" class="hidden w-full p-3 sm:p-3.5 bg-slate-50 dark:bg-slate-700/50 rounded-2xl border border-slate-100 dark:border-slate-700 text-slate-400 dark:text-slate-500 font-semibold text-xs sm:text-sm">
                             Tidak ada info sosial media
                         </div>
                     </div>
@@ -550,38 +563,10 @@
     <!-- PEMBERITAHUAN (Toast) -->
     <div id="toast" class="fixed bottom-4 right-4 transform translate-y-20 opacity-0 transition-all duration-300 bg-slate-800 dark:bg-slate-700 text-white px-6 py-3 rounded-xl shadow-2xl flex items-center gap-3 z-[200]">
         <i class="fa-solid fa-info-circle text-primary-400"></i>
-        <span id="toastMessage" class="font-medium text-sm"></span>
+        <span id="toastMessage" class="font-medium text-xs sm:text-sm"></span>
     </div>
 
     <script>
-        // --- THEME & DARK MODE ENGINE ---
-        function toggleDarkMode() {
-            document.body.classList.toggle('dark');
-            const isDark = document.body.classList.contains('dark');
-            localStorage.setItem('darkMode', isDark ? 'yes' : 'no');
-            updateChartTheme(); // Update chart text colors
-        }
-
-        function changeTheme(themeName) {
-            // Remove previous themes
-            document.body.classList.remove('theme-blue', 'theme-emerald', 'theme-rose');
-            if (themeName !== 'default') {
-                document.body.classList.add(themeName);
-            }
-            localStorage.setItem('colorTheme', themeName);
-            
-            // Re-render chart to apply new primary color
-            if(activities.length > 0) updateDashboard();
-        }
-
-        // Init Theme
-        if (localStorage.getItem('darkMode') === 'yes') {
-            document.body.classList.add('dark');
-        }
-        const savedTheme = localStorage.getItem('colorTheme');
-        if (savedTheme) changeTheme(savedTheme);
-
-
         // --- KONFIGURASI FIREBASE ---
         const firebaseConfig = {
             apiKey: "AIzaSyA2matP-r5rOBdZDFORc5triVTfRhM_4JM",
@@ -604,12 +589,12 @@
         });
 
         // --- VARIABEL GLOBAL ---
-        let userAccessToken = sessionStorage.getItem('googleApiToken'); 
+        let userAccessToken = null; // Akan diambil dari localStorage berdasarkan UID
         let userSpreadsheetId = null;
         let activities = [];
         let myChart = null;
         let currentCalDate = new Date(); 
-        let syncInterval = null; // Tambahan: Mesin waktu untuk Realtime Sync
+        let syncInterval = null; 
         
         const categoryData = {
             'Volunteer': { color: '#10b981', icon: 'fa-hands-holding-child' }, 
@@ -627,6 +612,38 @@
         const reconnectBtn = document.getElementById('reconnectBtn');
         const userInfo = document.getElementById('userInfo');
         const syncBadge = document.getElementById('syncBadge');
+        const themeControls = document.getElementById('themeControls');
+        const themeSpacer = document.getElementById('themeSpacer');
+
+        // --- THEME & DARK MODE ENGINE (MENGGUNAKAN UID) ---
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark');
+            const isDark = document.body.classList.contains('dark');
+            const uid = auth.currentUser ? auth.currentUser.uid : 'guest';
+            localStorage.setItem(`darkMode_${uid}`, isDark ? 'yes' : 'no');
+            updateChartTheme();
+        }
+
+        function changeTheme(themeName) {
+            document.body.classList.remove('theme-blue', 'theme-emerald', 'theme-rose');
+            if (themeName !== 'default') {
+                document.body.classList.add(themeName);
+            }
+            const uid = auth.currentUser ? auth.currentUser.uid : 'guest';
+            localStorage.setItem(`theme_${uid}`, themeName);
+            if(activities.length > 0) updateDashboard();
+        }
+
+        function applyUserTheme(uid) {
+            // Terapkan Dark Mode spesifik user
+            const isDark = localStorage.getItem(`darkMode_${uid}`) === 'yes';
+            if (isDark) document.body.classList.add('dark');
+            else document.body.classList.remove('dark');
+            
+            // Terapkan Warna spesifik user
+            const savedTheme = localStorage.getItem(`theme_${uid}`) || 'default';
+            changeTheme(savedTheme);
+        }
 
         // --- INIT HARI INI WIDGET ---
         function initHariIni() {
@@ -647,10 +664,19 @@
         // --- AUTH STATE LISTENER ---
         auth.onAuthStateChanged(async (user) => {
             if (user) {
+                // Tampilkan menu Tema yang disembunyikan
+                themeControls.classList.remove('hidden');
+                themeControls.classList.add('flex');
+                themeSpacer.classList.add('hidden'); // Sembunyikan spacer agar rapi
+                
+                // Terapkan memori tema untuk user ini
+                applyUserTheme(user.uid);
+
                 document.getElementById('userPhoto').src = user.photoURL;
                 document.getElementById('userName').innerText = user.displayName.split(' ')[0];
                 
                 userSpreadsheetId = localStorage.getItem(`sheetId_${user.uid}`);
+                userAccessToken = localStorage.getItem(`googleToken_${user.uid}`); // PENGGUNAAN LOCALSTORAGE PERMANEN
                 
                 if (userAccessToken) {
                     loginBtn.classList.add('hidden');
@@ -663,13 +689,13 @@
                     if (userSpreadsheetId) {
                        await fetchActivitiesFromSheet();
                        
-                       // MULAI SINKRONISASI REALTIME (Cek setiap 10 detik)
                        if(syncInterval) clearInterval(syncInterval);
                        syncInterval = setInterval(() => fetchActivitiesFromSheet(true), 10000);
                     } else {
                         await createInitialSpreadsheet(user.uid);
                     }
                 } else {
+                    // Jika Token sudah dihapus karena kadaluarsa (1 jam)
                     loginBtn.classList.add('hidden');
                     userInfo.classList.remove('hidden');
                     userInfo.classList.add('flex');
@@ -678,6 +704,11 @@
                     mainDashboardContainer.classList.add('opacity-50', 'pointer-events-none');
                 }
             } else {
+                // Sembunyikan menu tema jika belum login
+                themeControls.classList.add('hidden');
+                themeControls.classList.remove('flex');
+                themeSpacer.classList.remove('hidden');
+
                 loginBtn.classList.remove('hidden');
                 reconnectBtn.classList.add('hidden');
                 reconnectBtn.classList.remove('flex');
@@ -686,10 +717,9 @@
                 mainDashboardContainer.classList.add('opacity-50', 'pointer-events-none');
                 
                 userAccessToken = null;
-                sessionStorage.removeItem('googleApiToken');
                 userSpreadsheetId = null;
                 activities = [];
-                if(syncInterval) clearInterval(syncInterval); // Hentikan sinkronisasi
+                if(syncInterval) clearInterval(syncInterval);
                 updateDashboard();
                 renderCalendar();
                 document.getElementById('sheetLinkContainer').classList.add('hidden');
@@ -698,19 +728,34 @@
 
         // --- FUNGSI LOGIN ---
         async function loginWithGoogle() {
+            if (window.self !== window.top) {
+                showToast("Peringatan: Popup Login Google mungkin diblokir di layar pratinjau ini. Harap jalankan file di tab baru (Live Server).", true);
+            }
+
             try {
                 loginBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Login...';
                 reconnectBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Menghubungkan...';
                 
                 const result = await auth.signInWithPopup(provider);
                 userAccessToken = result.credential.accessToken;
-                sessionStorage.setItem('googleApiToken', userAccessToken);
+                const user = result.user;
+
+                // SIMPAN DI LOCALSTORAGE (Biar tahan refresh)
+                localStorage.setItem(`googleToken_${user.uid}`, userAccessToken);
                 
                 showToast("Berhasil terhubung! Mengambil data...");
                 
-                const user = result.user;
                 userSpreadsheetId = localStorage.getItem(`sheetId_${user.uid}`);
                 
+                // Set dan Tampilkan Tema
+                if (!localStorage.getItem(`theme_${user.uid}`)) {
+                    localStorage.setItem(`theme_${user.uid}`, 'default');
+                }
+                applyUserTheme(user.uid);
+                themeControls.classList.remove('hidden');
+                themeControls.classList.add('flex');
+                themeSpacer.classList.add('hidden');
+
                 loginBtn.classList.add('hidden');
                 reconnectBtn.classList.add('hidden');
                 reconnectBtn.classList.remove('flex');
@@ -722,8 +767,6 @@
                 
                 if (userSpreadsheetId) {
                     await fetchActivitiesFromSheet();
-                    
-                    // MULAI SINKRONISASI REALTIME
                     if(syncInterval) clearInterval(syncInterval);
                     syncInterval = setInterval(() => fetchActivitiesFromSheet(true), 10000);
                 } else {
@@ -742,10 +785,10 @@
         }
 
         function logout() {
-            if(syncInterval) clearInterval(syncInterval); // Hentikan mesin waktu
+            if(syncInterval) clearInterval(syncInterval); 
             auth.signOut().then(() => {
                 showToast("Berhasil logout.");
-                sessionStorage.removeItem('googleApiToken');
+                // Token tidak perlu dihapus manual, biar ditimpa saat login lagi
             }).catch((error) => {
                 showToast("Gagal logout.", true);
             });
@@ -794,7 +837,6 @@
                 updateSheetLink();
                 await fetchActivitiesFromSheet();
 
-                // MULAI SINKRONISASI REALTIME
                 if(syncInterval) clearInterval(syncInterval);
                 syncInterval = setInterval(() => fetchActivitiesFromSheet(true), 10000);
 
@@ -825,7 +867,6 @@
         async function fetchActivitiesFromSheet(isSilent = false) {
             if (!userSpreadsheetId || !userAccessToken) return;
 
-            // Jika dipanggil secara silent (dari background), jangan munculkan pop-up loading
             if (!isSilent) {
                 syncBadge.innerHTML = '<i class="fa-solid fa-arrows-rotate sync-spin"></i> Menyinkronkan...';
                 syncBadge.classList.remove('hidden');
@@ -842,7 +883,7 @@
                 if (!response.ok) throw new Error("Gagal membaca Spreadsheet");
 
                 const result = await response.json();
-                activities = []; // Selalu reset data terlebih dahulu!
+                activities = []; 
                 
                 if (result.values && result.values.length > 0) {
                     activities = result.values.map(row => ({
@@ -859,7 +900,6 @@
                     }));
                 }
 
-                // Render ulang semuanya! Jika activities kosong, UI otomatis akan ikut bersih.
                 updateDashboard();
                 renderCalendar(); 
                 updateAktivitasTerdekat(); 
@@ -882,10 +922,14 @@
                     syncBadge.classList.replace('bg-primary-600', 'bg-red-500');
                 }
                 
+                // MENGHAPUS TOKEN YANG KADALUARSA DARI LOCALSTORAGE
                 if (error.message.includes("Gagal membaca")) {
-                    if (!isSilent) showToast("Sesi akses Drive kadaluarsa. Silakan klik 'Hubungkan Ulang Drive'.", true);
-                    if (syncInterval) clearInterval(syncInterval); // Matikan interval jika token mati
-                    sessionStorage.removeItem('googleApiToken');
+                    if (!isSilent) showToast("Sesi akses Drive kadaluarsa (Maks 1 Jam). Silakan Hubungkan Ulang.", true);
+                    if (syncInterval) clearInterval(syncInterval); 
+                    
+                    if(auth.currentUser) {
+                        localStorage.removeItem(`googleToken_${auth.currentUser.uid}`);
+                    }
                     userAccessToken = null;
                     reconnectBtn.classList.remove('hidden');
                     reconnectBtn.classList.add('flex');
@@ -916,7 +960,7 @@
             if(upcoming.length === 0) {
                 txtAktivitas.innerText = "Belum Ada Acara";
                 badgeHMin.innerText = "Santai dulu!";
-                badgeHMin.className = "mt-2 inline-block px-3 py-1 bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-300 text-xs font-bold rounded-lg border border-slate-200 dark:border-slate-600";
+                badgeHMin.className = "mt-1 sm:mt-2 inline-block px-2 sm:px-3 py-1 bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-300 text-[10px] sm:text-xs font-bold rounded-lg border border-slate-200 dark:border-slate-600";
                 return;
             }
 
@@ -931,10 +975,10 @@
             
             if(diffDays === 0) {
                 badgeHMin.innerText = `HARI INI!`;
-                badgeHMin.className = "mt-2 inline-block px-3 py-1 bg-rose-50 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400 text-xs font-bold rounded-lg border border-rose-200 dark:border-rose-800 animate-pulse";
+                badgeHMin.className = "mt-1 sm:mt-2 inline-block px-2 sm:px-3 py-1 bg-rose-50 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400 text-[10px] sm:text-xs font-bold rounded-lg border border-rose-200 dark:border-rose-800 animate-pulse";
             } else {
                 badgeHMin.innerText = `H - ${diffDays} (${formatter.format(targetDate)})`;
-                badgeHMin.className = "mt-2 inline-block px-3 py-1 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-xs font-bold rounded-lg border border-blue-100 dark:border-blue-800";
+                badgeHMin.className = "mt-1 sm:mt-2 inline-block px-2 sm:px-3 py-1 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-[10px] sm:text-xs font-bold rounded-lg border border-blue-100 dark:border-blue-800";
             }
         }
 
@@ -1017,7 +1061,7 @@
             // Set Header
             document.getElementById('modalIcon').className = `fa-solid ${catInfo.icon}`;
             document.getElementById('modalIcon').style.color = catInfo.color;
-            document.getElementById('modalIconBg').style.backgroundColor = catInfo.color + '20'; // 20% opacity
+            document.getElementById('modalIconBg').style.backgroundColor = catInfo.color + '20'; 
             
             document.getElementById('modalKategori').innerText = act.kategori;
             document.getElementById('modalNama').innerText = act.nama;
@@ -1055,7 +1099,6 @@
             modal.classList.remove('hidden');
             modal.classList.add('flex');
             
-            // Animasi transisi
             setTimeout(() => {
                 modal.classList.remove('opacity-0');
                 modalContent.classList.remove('scale-95');
@@ -1113,7 +1156,6 @@
 
             const categoriesFound = [...new Set(activities.map(a => a.kategori).filter(Boolean))];
             const datasets = categoriesFound.map(cat => {
-                // Gunakan warna custom sesuai kategori, jika tidak ada fallback ke primary theme
                 const catInfo = categoryData[cat] || { color: getComputedStyle(document.documentElement).getPropertyValue('--color-primary-500').trim() };
                 return {
                     label: cat,
@@ -1127,7 +1169,7 @@
             if(myChart) myChart.destroy();
 
             const isDark = document.body.classList.contains('dark');
-            const textColor = isDark ? '#94a3b8' : '#64748b'; // Slate-400 / Slate-500
+            const textColor = isDark ? '#94a3b8' : '#64748b'; 
 
             myChart = new Chart(ctx, {
                 type: 'bar',
