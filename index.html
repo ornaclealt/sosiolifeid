@@ -692,6 +692,26 @@
             setTimeout(() => { toast.classList.add('translate-y-20', 'opacity-0'); }, 6000); 
         }
 
+        // --- FUNGSI PENCARI DATABASE LINTAS DEVICE (SIHIR BARU) ---
+        async function findExistingSpreadsheet(token) {
+            try {
+                // Mencari file bernama persis "Tracker_Portofolio_Mahasiswa_Data" di Drive user
+                const query = encodeURIComponent("name='Tracker_Portofolio_Mahasiswa_Data' and trashed=false");
+                const response = await fetch(`https://www.googleapis.com/drive/v3/files?q=${query}&fields=files(id,name)`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                const data = await response.json();
+                if (data.files && data.files.length > 0) {
+                    // Ketemu! Kita kembalikan ID-nya
+                    return data.files[0].id;
+                }
+            } catch (error) {
+                console.error("Gagal mencari file di Drive:", error);
+            }
+            return null; // Tidak ketemu
+        }
+
         // --- AUTH STATE LISTENER ---
         auth.onAuthStateChanged(async (user) => {
             if (user) {
@@ -715,6 +735,21 @@
                     reconnectBtn.classList.remove('flex');
                     mainDashboardContainer.classList.remove('opacity-50', 'pointer-events-none');
                     
+                    // --- MENCARI DATABASE JIKA DI DEVICE BARU ---
+                    if (!userSpreadsheetId) {
+                        syncBadge.innerHTML = '<i class="fa-solid fa-search sync-spin"></i> Mencari Database...';
+                        syncBadge.classList.remove('hidden');
+                        syncBadge.classList.add('flex');
+                        
+                        userSpreadsheetId = await findExistingSpreadsheet(userAccessToken);
+                        
+                        if (userSpreadsheetId) {
+                            // Ketemu! Simpan di Local Storage device ini
+                            localStorage.setItem(`sheetId_${user.uid}`, userSpreadsheetId);
+                            showToast("Database ditemukan! Menghubungkan...");
+                        }
+                    }
+
                     if (userSpreadsheetId) {
                        await fetchActivitiesFromSheet();
                        
@@ -769,10 +804,11 @@
 
                 localStorage.setItem(`googleToken_${user.uid}`, userAccessToken);
                 
-                showToast("Berhasil terhubung! Mengambil data...");
+                showToast("Berhasil terhubung! Mencari data...");
                 
                 userSpreadsheetId = localStorage.getItem(`sheetId_${user.uid}`);
                 
+                // Set dan Terapkan Tema
                 if (!localStorage.getItem(`theme_${user.uid}`)) {
                     localStorage.setItem(`theme_${user.uid}`, 'default');
                 }
@@ -790,6 +826,19 @@
                 document.getElementById('userName').innerText = user.displayName.split(' ')[0];
                 mainDashboardContainer.classList.remove('opacity-50', 'pointer-events-none');
                 
+                // --- MENCARI DATABASE JIKA DI DEVICE BARU ---
+                if (!userSpreadsheetId) {
+                    syncBadge.innerHTML = '<i class="fa-solid fa-search sync-spin"></i> Mencari Database...';
+                    syncBadge.classList.remove('hidden');
+                    syncBadge.classList.add('flex');
+                    
+                    userSpreadsheetId = await findExistingSpreadsheet(userAccessToken);
+                    
+                    if (userSpreadsheetId) {
+                        localStorage.setItem(`sheetId_${user.uid}`, userSpreadsheetId);
+                    }
+                }
+
                 if (userSpreadsheetId) {
                     await fetchActivitiesFromSheet();
                     if(syncInterval) clearInterval(syncInterval);
@@ -914,7 +963,7 @@
         }
 
         async function appendToSheet(valuesArray) {
-            const range = 'Sheet1!A:K'; // PERUBAHAN: Ditambahkan sampai kolom K (11 Kolom)
+            const range = 'Sheet1!A:K'; 
             const response = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${userSpreadsheetId}/values/${range}:append?valueInputOption=USER_ENTERED`, {
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${userAccessToken}`, 'Content-Type': 'application/json' },
@@ -934,7 +983,7 @@
             }
 
             try {
-                const range = 'Sheet1!A1:K'; // PERUBAHAN: Mulai A1 sampai K
+                const range = 'Sheet1!A1:K'; 
                 const response = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${userSpreadsheetId}/values/${range}`, {
                     method: 'GET',
                     headers: { 'Authorization': `Bearer ${userAccessToken}` }
@@ -971,7 +1020,7 @@
                         linkReg: row[7] || '',
                         linkSosmed: row[8] || '',
                         kategoriSosmed: row[9] || '',
-                        prioritas: row[10] || '' // TAMBAHAN: Tarik prioritas dari baris ke-10 (K)
+                        prioritas: row[10] || ''
                     }));
                 }
 
@@ -1326,7 +1375,7 @@
                 document.getElementById('semester').value, document.getElementById('tglPelaksanaan').value,
                 document.getElementById('tglDeadline').value, document.getElementById('linkReg').value,
                 document.getElementById('linkSosmed').value, document.getElementById('kategoriSosmed').value || "",
-                document.getElementById('prioritas').value // TAMBAHAN: Kolom Prioritas di Input
+                document.getElementById('prioritas').value 
             ];
 
             try {
