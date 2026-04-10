@@ -170,7 +170,7 @@
             border: 1px solid #f1f5f9;
             border-radius: 0.5rem;
             overflow: hidden;
-            min-w: 500px; /* Force minimum width for mobile scroll */
+            min-w: 500px; 
         }
         .dark .calendar-grid {
             background-color: #334155;
@@ -296,13 +296,24 @@
 
                 <div class="px-5 sm:px-6 pb-8 pt-4">
                     <form id="activityForm" class="space-y-4">
-                        <div class="group">
-                            <label class="block text-[11px] font-bold text-slate-400 mb-1 uppercase tracking-wider ml-2">Nama Aktivitas</label>
-                            <div class="relative">
-                                <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none transition-transform group-focus-within:-translate-y-1">
-                                    <i class="fa-solid fa-rocket text-slate-300 dark:text-slate-500 group-focus-within:text-primary-500 transition-colors"></i>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div class="group">
+                                <label class="block text-[11px] font-bold text-slate-400 mb-1 uppercase tracking-wider ml-2">Nama Aktivitas</label>
+                                <div class="relative">
+                                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none transition-transform group-focus-within:-translate-y-1">
+                                        <i class="fa-solid fa-rocket text-slate-300 dark:text-slate-500 group-focus-within:text-primary-500 transition-colors"></i>
+                                    </div>
+                                    <input type="text" id="nama" required class="input-cute w-full pl-10 pr-4 py-2.5 rounded-xl text-sm font-bold placeholder-slate-300 dark:placeholder-slate-500" placeholder="Contoh: OSPEK Univ">
                                 </div>
-                                <input type="text" id="nama" required class="input-cute w-full pl-10 pr-4 py-2.5 rounded-xl text-sm font-bold placeholder-slate-300 dark:placeholder-slate-500" placeholder="Contoh: Panitia OSPEK Univ">
+                            </div>
+                            <div class="group">
+                                <label class="block text-[11px] font-bold text-slate-400 mb-1 uppercase tracking-wider ml-2">Prioritas Acara</label>
+                                <select id="prioritas" required class="input-cute w-full px-4 py-2.5 rounded-xl text-sm font-bold appearance-none cursor-pointer">
+                                    <option value="" disabled selected>Pilih...</option>
+                                    <option value="Prioritas 1">🔴 Prioritas 1 (Tinggi)</option>
+                                    <option value="Prioritas 2">🟡 Prioritas 2 (Sedang)</option>
+                                    <option value="Prioritas 3">🟢 Prioritas 3 (Rendah)</option>
+                                </select>
                             </div>
                         </div>
 
@@ -444,7 +455,6 @@
                     </div>
                 </div>
                 
-                <!-- Horizontal scroll pembungkus kalender di HP -->
                 <div class="overflow-x-auto pb-2 scrollbar-hide">
                     <div class="calendar-grid text-xs sm:text-sm" id="calendarBody">
                         <!-- Header Hari dirender via JS -->
@@ -452,18 +462,36 @@
                 </div>
             </div>
 
-            <!-- CHART WIDGET -->
-            <div class="glass-card rounded-[2rem] p-5 sm:p-6 shadow-xl relative overflow-hidden">
-                <div class="flex justify-between items-center mb-4">
-                    <div>
-                        <h2 class="text-lg sm:text-xl font-extrabold text-slate-800 dark:text-white">Performa Semester</h2>
+            <!-- DUA CHART WIDGETS -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- CHART 1: PERFORMA SEMESTER -->
+                <div class="glass-card rounded-[2rem] p-5 sm:p-6 shadow-xl relative overflow-hidden">
+                    <div class="flex justify-between items-center mb-4">
+                        <div>
+                            <h2 class="text-lg sm:text-xl font-extrabold text-slate-800 dark:text-white">Performa Semester</h2>
+                        </div>
+                        <div class="bg-primary-100 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 w-10 h-10 rounded-xl flex items-center justify-center shadow-inner">
+                            <i class="fa-solid fa-chart-simple"></i>
+                        </div>
                     </div>
-                    <div class="bg-primary-100 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 w-10 h-10 rounded-xl flex items-center justify-center shadow-inner">
-                        <i class="fa-solid fa-chart-simple"></i>
+                    <div class="relative h-48 sm:h-56 w-full">
+                        <canvas id="portfolioChart"></canvas>
                     </div>
                 </div>
-                <div class="relative h-48 sm:h-56 w-full">
-                    <canvas id="portfolioChart"></canvas>
+
+                <!-- CHART 2: DISTRIBUSI PRIORITAS -->
+                <div class="glass-card rounded-[2rem] p-5 sm:p-6 shadow-xl relative overflow-hidden">
+                    <div class="flex justify-between items-center mb-4">
+                        <div>
+                            <h2 class="text-lg sm:text-xl font-extrabold text-slate-800 dark:text-white">Tingkat Prioritas</h2>
+                        </div>
+                        <div class="bg-rose-100 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400 w-10 h-10 rounded-xl flex items-center justify-center shadow-inner">
+                            <i class="fa-solid fa-chart-pie"></i>
+                        </div>
+                    </div>
+                    <div class="relative h-48 sm:h-56 w-full flex justify-center">
+                        <canvas id="prioritasChart"></canvas>
+                    </div>
                 </div>
             </div>
 
@@ -514,6 +542,13 @@
 
                 <!-- Info Rows -->
                 <div class="space-y-3">
+                    <div class="flex justify-between items-center p-3 sm:p-3.5 bg-amber-50 dark:bg-amber-900/20 rounded-2xl border border-amber-100 dark:border-amber-800/50">
+                        <div class="flex items-center gap-2 sm:gap-3 text-amber-600 dark:text-amber-400 font-semibold text-xs sm:text-sm">
+                            <i class="fa-solid fa-star opacity-70"></i> Prioritas
+                        </div>
+                        <div id="modalPrioritas" class="font-bold text-amber-700 dark:text-amber-300 text-xs sm:text-sm">Prioritas X</div>
+                    </div>
+
                     <div class="flex justify-between items-center p-3 sm:p-3.5 bg-slate-50 dark:bg-slate-700/50 rounded-2xl border border-slate-100 dark:border-slate-700">
                         <div class="flex items-center gap-2 sm:gap-3 text-slate-600 dark:text-slate-300 font-semibold text-xs sm:text-sm">
                             <i class="fa-solid fa-graduation-cap opacity-50"></i> Semester
@@ -589,9 +624,10 @@
         let userSpreadsheetId = null;
         let activities = [];
         let myChart = null;
+        let prioritasChart = null; // Tambahan untuk grafik Prioritas
         let currentCalDate = new Date(); 
         let syncInterval = null; 
-        let isHealing = false; // Flag penjaga proses penyembuhan
+        let isHealing = false; 
         
         const categoryData = {
             'Volunteer': { color: '#10b981', icon: 'fa-hands-holding-child' }, 
@@ -790,7 +826,6 @@
             syncBadge.classList.add('flex');
 
             try {
-                // 1. Jika pengguna telah menghapus header tetapi masih ada baris data, kita dorong datanya 1 baris ke bawah
                 if (insertRow) {
                     const insertPayload = {
                         requests: [{ insertDimension: { range: { sheetId: 0, dimension: 'ROWS', startIndex: 0, endIndex: 1 }, inheritFromBefore: false } }]
@@ -802,22 +837,22 @@
                     });
                 }
 
-                // 2. Kita tulis ulang Header tepat di baris pertama
                 const headerValues = [
-                    ["ID", "Timestamp", "Nama Aktivitas", "Kategori", "Semester", "Tgl Pelaksanaan", "Tgl Deadline", "Link Registrasi", "Info Sosmed", "Kategori Sosmed"]
+                    ["ID", "Timestamp", "Nama Aktivitas", "Kategori", "Semester", "Tgl Pelaksanaan", "Tgl Deadline", "Link Registrasi", "Info Sosmed", "Kategori Sosmed", "Prioritas"]
                 ];
-                await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${userSpreadsheetId}/values/Sheet1!A1:J1?valueInputOption=USER_ENTERED`, {
+                await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${userSpreadsheetId}/values/Sheet1!A1:K1?valueInputOption=USER_ENTERED`, {
                     method: 'PUT',
                     headers: { 'Authorization': `Bearer ${userAccessToken}`, 'Content-Type': 'application/json' },
                     body: JSON.stringify({ majorDimension: "ROWS", values: headerValues })
                 });
 
-                // 3. Kita kembalikan format ajaibnya (Warna kuning, font, dan freeze)
+                // PERBAIKAN FORMAT: Atur semua kolom jadi 150px, lalu timpakan kolom C jadi 280px.
                 const formatPayload = {
                     requests: [
                         { repeatCell: { range: { sheetId: 0 }, cell: { userEnteredFormat: { textFormat: { fontFamily: 'Times New Roman', fontSize: 12 }, horizontalAlignment: 'LEFT' } }, fields: 'userEnteredFormat(textFormat,horizontalAlignment)' } },
                         { repeatCell: { range: { sheetId: 0, startRowIndex: 0, endRowIndex: 1 }, cell: { userEnteredFormat: { backgroundColor: { red: 1, green: 0.95, blue: 0 }, textFormat: { bold: true, fontFamily: 'Times New Roman', fontSize: 12 }, horizontalAlignment: 'LEFT' } }, fields: 'userEnteredFormat(backgroundColor,textFormat,horizontalAlignment)' } },
-                        { updateDimensionProperties: { range: { sheetId: 0, dimension: 'COLUMNS', startIndex: 0, endIndex: 10 }, properties: { pixelSize: 150 }, fields: 'pixelSize' } },
+                        { updateDimensionProperties: { range: { sheetId: 0, dimension: 'COLUMNS', startIndex: 0, endIndex: 11 }, properties: { pixelSize: 150 }, fields: 'pixelSize' } },
+                        { updateDimensionProperties: { range: { sheetId: 0, dimension: 'COLUMNS', startIndex: 2, endIndex: 3 }, properties: { pixelSize: 280 }, fields: 'pixelSize' } },
                         { updateSheetProperties: { properties: { sheetId: 0, gridProperties: { frozenRowCount: 1 } }, fields: 'gridProperties.frozenRowCount' } }
                     ]
                 };
@@ -853,7 +888,6 @@
                 userSpreadsheetId = data.spreadsheetId;
                 localStorage.setItem(`sheetId_${uid}`, userSpreadsheetId);
 
-                // Langsung panggil mesin penyembuh untuk inisialisasi awal (tanpa insert baris)
                 isHealing = true;
                 await healSpreadsheet(false);
                 isHealing = false;
@@ -880,7 +914,7 @@
         }
 
         async function appendToSheet(valuesArray) {
-            const range = 'Sheet1!A:J';
+            const range = 'Sheet1!A:K'; // PERUBAHAN: Ditambahkan sampai kolom K (11 Kolom)
             const response = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${userSpreadsheetId}/values/${range}:append?valueInputOption=USER_ENTERED`, {
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${userAccessToken}`, 'Content-Type': 'application/json' },
@@ -900,7 +934,7 @@
             }
 
             try {
-                const range = 'Sheet1!A1:J'; // PERUBAHAN: Sekarang kita cek semua mulai baris ke 1 (A1)
+                const range = 'Sheet1!A1:K'; // PERUBAHAN: Mulai A1 sampai K
                 const response = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${userSpreadsheetId}/values/${range}`, {
                     method: 'GET',
                     headers: { 'Authorization': `Bearer ${userAccessToken}` }
@@ -911,16 +945,13 @@
                 const result = await response.json();
                 activities = []; 
                 
-                // SISTEM DETEKSI KERUSAKAN HEADER
                 if (!isHealing) {
                     if (!result.values || result.values.length === 0) {
-                        // Kasus 1: Spreadsheet benar-benar kosong melompong (Header hilang)
                         isHealing = true;
                         await healSpreadsheet(false);
                         isHealing = false;
                         return;
                     } else if (result.values[0][0] !== 'ID') {
-                        // Kasus 2: Ada datanya, tapi tidak ada Header di baris 1!
                         isHealing = true;
                         await healSpreadsheet(true);
                         isHealing = false;
@@ -928,7 +959,6 @@
                     }
                 }
 
-                // Jika lolos pengecekan (Header ada), maka kita salin data di baris ke-2 dst.
                 if (result.values && result.values.length > 1) {
                     activities = result.values.slice(1).map(row => ({
                         id: row[0] || '',
@@ -940,7 +970,8 @@
                         tglDeadline: row[6] || '',
                         linkReg: row[7] || '',
                         linkSosmed: row[8] || '',
-                        kategoriSosmed: row[9] || ''
+                        kategoriSosmed: row[9] || '',
+                        prioritas: row[10] || '' // TAMBAHAN: Tarik prioritas dari baris ke-10 (K)
                     }));
                 }
 
@@ -1110,6 +1141,7 @@
             document.getElementById('modalNama').innerText = act.nama;
             
             // Set Details
+            document.getElementById('modalPrioritas').innerText = act.prioritas || '-';
             document.getElementById('modalSemester').innerText = act.semester;
             document.getElementById('modalPelaksanaan').innerText = act.tglPelaksanaan ? formatter.format(new Date(act.tglPelaksanaan)) : '-';
             document.getElementById('modalDeadline').innerText = act.tglDeadline ? formatter.format(new Date(act.tglDeadline)) : '-';
@@ -1173,20 +1205,27 @@
             if(activities.length === 0) {
                 document.getElementById('semesterTeraktif').innerText = "-";
                 if(myChart) { myChart.data.datasets = []; myChart.update(); }
+                if(prioritasChart) { prioritasChart.data.datasets[0].data = []; prioritasChart.update(); }
                 return;
             }
 
             const dataBySemester = {};
             const semesters = ['Semester 1', 'Semester 2', 'Semester 3', 'Semester 4', 'Semester 5', 'Semester 6', 'Semester 7', 'Semester 8+'];
-            
             semesters.forEach(sem => { dataBySemester[sem] = {}; });
+            
             let maxCount = 0; let topSemester = "-";
+            const prioritasCounts = { 'Prioritas 1': 0, 'Prioritas 2': 0, 'Prioritas 3': 0 };
 
             activities.forEach(act => {
+                // Untuk Grafik Semester
                 if(act.semester && act.kategori && semesters.includes(act.semester)) {
                     if(!dataBySemester[act.semester]) dataBySemester[act.semester] = {};
                     if(!dataBySemester[act.semester][act.kategori]) dataBySemester[act.semester][act.kategori] = 0;
                     dataBySemester[act.semester][act.kategori]++;
+                }
+                // Untuk Grafik Prioritas
+                if(act.prioritas && prioritasCounts[act.prioritas] !== undefined) {
+                    prioritasCounts[act.prioritas]++;
                 }
             });
 
@@ -1197,6 +1236,10 @@
             });
             document.getElementById('semesterTeraktif').innerText = topSemester === "-" ? "-" : topSemester;
 
+            const isDark = document.body.classList.contains('dark');
+            const textColor = isDark ? '#94a3b8' : '#64748b'; 
+
+            // --- RENDER GRAFIK SEMESTER (BAR) ---
             const categoriesFound = [...new Set(activities.map(a => a.kategori).filter(Boolean))];
             const datasets = categoriesFound.map(cat => {
                 const catInfo = categoryData[cat] || { color: getComputedStyle(document.documentElement).getPropertyValue('--color-primary-500').trim() };
@@ -1210,10 +1253,6 @@
 
             const ctx = document.getElementById('portfolioChart').getContext('2d');
             if(myChart) myChart.destroy();
-
-            const isDark = document.body.classList.contains('dark');
-            const textColor = isDark ? '#94a3b8' : '#64748b'; 
-
             myChart = new Chart(ctx, {
                 type: 'bar',
                 data: { labels: semesters, datasets: datasets },
@@ -1227,6 +1266,32 @@
                         x: { stacked: true, grid: { display: false }, ticks: { color: textColor, font: { family: 'Quicksand', weight: '600' } } },
                         y: { stacked: true, beginAtZero: true, grid: { color: isDark ? '#334155' : '#e2e8f0' }, ticks: { color: textColor, stepSize: 1, font: { family: 'Quicksand', weight: '600' } } }
                     },
+                    animation: { duration: 1000, easing: 'easeOutQuart' }
+                }
+            });
+
+            // --- RENDER GRAFIK PRIORITAS (DOUGHNUT) ---
+            const ctx2 = document.getElementById('prioritasChart').getContext('2d');
+            if(prioritasChart) prioritasChart.destroy();
+            prioritasChart = new Chart(ctx2, {
+                type: 'doughnut',
+                data: { 
+                    labels: ['Tinggi (P1)', 'Sedang (P2)', 'Rendah (P3)'], 
+                    datasets: [{
+                        data: [prioritasCounts['Prioritas 1'], prioritasCounts['Prioritas 2'], prioritasCounts['Prioritas 3']],
+                        backgroundColor: ['#ef4444', '#f59e0b', '#10b981'],
+                        borderWidth: isDark ? 2 : 0,
+                        borderColor: isDark ? '#1e293b' : '#ffffff',
+                        hoverOffset: 4
+                    }] 
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom', labels: { color: textColor, font: { family: 'Quicksand', weight: 'bold' } } },
+                        tooltip: { titleFont: { family: 'Quicksand' }, bodyFont: { family: 'Quicksand' } }
+                    },
+                    cutout: '65%',
                     animation: { duration: 1000, easing: 'easeOutQuart' }
                 }
             });
@@ -1260,7 +1325,8 @@
                 document.getElementById('nama').value, document.getElementById('kategori').value,
                 document.getElementById('semester').value, document.getElementById('tglPelaksanaan').value,
                 document.getElementById('tglDeadline').value, document.getElementById('linkReg').value,
-                document.getElementById('linkSosmed').value, document.getElementById('kategoriSosmed').value || "" 
+                document.getElementById('linkSosmed').value, document.getElementById('kategoriSosmed').value || "",
+                document.getElementById('prioritas').value // TAMBAHAN: Kolom Prioritas di Input
             ];
 
             try {
