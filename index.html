@@ -273,8 +273,9 @@
         provider.addScope('https://www.googleapis.com/auth/drive.file');
         
         // --- CLIENT ID ---
+        // MEMPERBARUI DENGAN CLIENT ID GOOGLE DRIVE YANG BARU
         provider.setCustomParameters({
-            'client_id': '441151079469-uiruitmaq70on2hqojuo9urmmtl4qrmc.apps.googleusercontent.com'
+            'client_id': '267807089762-rag2i6u8gumjodhavunqcammnll7l5p1.apps.googleusercontent.com'
         });
 
         // Variabel Global
@@ -306,7 +307,7 @@
             
             setTimeout(() => {
                 toast.classList.add('translate-y-20', 'opacity-0');
-            }, 4000);
+            }, 6000); // Diperpanjang durasinya agar mudah dibaca jika ada error
         }
 
         // --- AUTH STATE LISTENER (Pengecekan Status Login) ---
@@ -418,7 +419,10 @@
                     })
                 });
                 
-                if (!response.ok) throw new Error("Gagal membuat Spreadsheet");
+                if (!response.ok) {
+                    const errData = await response.json();
+                    throw new Error(errData.error?.message || "Gagal membuat Spreadsheet");
+                }
                 
                 const data = await response.json();
                 userSpreadsheetId = data.spreadsheetId;
@@ -444,6 +448,7 @@
                 console.error("Error membuat spreadsheet:", error);
                 syncBadge.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> Gagal membuat Database';
                 syncBadge.classList.replace('bg-violet-600', 'bg-red-500');
+                showToast("Pesan Server Google: " + error.message, true); // Menampilkan detail error asli dari Google
             }
         }
 
@@ -464,7 +469,7 @@
 
             if (!response.ok) {
                 const errData = await response.json();
-                throw new Error(errData.error.message || "Gagal menyimpan ke Spreadsheet");
+                throw new Error(errData.error?.message || "Gagal menyimpan ke Spreadsheet");
             }
         }
 
@@ -615,8 +620,13 @@
         form.addEventListener('submit', async function(e) {
             e.preventDefault();
             
-            if (!userAccessToken || !userSpreadsheetId) {
-                showToast("Koneksi ke Drive terputus. Silakan hubungkan ulang!", true);
+            if (!userAccessToken) {
+                showToast("Sesi akses habis. Silakan klik tombol 'Hubungkan Ulang Drive' di atas!", true);
+                return;
+            }
+
+            if (!userSpreadsheetId) {
+                showToast("Database belum terbentuk. Pastikan kamu mencentang izin Google Drive saat Login.", true);
                 return;
             }
 
